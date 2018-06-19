@@ -1,6 +1,6 @@
 {
   "name": "cp-grpx",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Correctprice GRPX lib",
   "main": "index.js",
   "types": "dist/index.d.ts",
