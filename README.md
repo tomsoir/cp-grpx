@@ -1,5 +1,9 @@
+[![Build Status](https://travis-ci.org/tomsoir/cp-grpx.svg?branch=master)](https://travis-ci.org/tomsoir/cp-grpx)
+[![Coverage Status](https://coveralls.io/repos/github/tomsoir/cp-grpx/badge.svg)](https://coveralls.io/github/tomsoir/cp-grpx)
+
 # Correctprice GRPX lib
-A GRPX lib that helps to pack / unpack Correctprice GRPX binary data vectors
+A GRPX lib that helps to pack / unpack Correctprice GRPX binary data
+ vectors
 ## Installation 
 ```sh
 npm install cp-grpx --save
