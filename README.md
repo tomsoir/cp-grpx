@@ -1,4 +1,4 @@
-# mypluralize
+# Correctprice GRPX lib
 A GRPX lib that helps to pack / unpack Correctprice GRPX binary data vectors
 ## Installation 
 ```sh
