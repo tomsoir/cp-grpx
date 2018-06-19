@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+
+<html><head>
+
+  <meta charset='utf-8'>
+  <title>GRPX example</title>
+  <link type='text/css' rel='stylesheet' href='styles.css' media='all' />
+  <script type='text/javascript' src='../dist/index.js'></script>
+
+  <script>
+    window.correctprice = {
+      version: undefined,
+      desc: undefined,
+      sect: undefined,
+      unpacked: undefined,
+      selected: undefined,
+      packed: undefined,
+    };
+  </script>
+</head><body>
+
+  <h2>GRPX example</h2>
+
+  <!-- 1 -->
+  <section>
+    <h3>Step-1: Get required dependencies</h3>
+    <h4>Version (<a href='https://api2.correctprice.ru/get_version'>/get_version</a>)</h4>
+    <input type='text' disabled='true' id='version' size='23' />
+    <script>
+      fetch('https://api2.correctprice.ru/get_version?jsoncallback=?')
+        .then((response) => response.text())
+        .then((response) => JSON.parse(response.replace(/\?\((.*)\)/, '$1')))
+        .then((response) => (window.correctprice.desc = response))
+        .then((response) => document.querySelector('#version').value = JSON.stringify(response))
+        .catch(error => console.error(error));
+    </script>
+
+    <h4>Desc lib (<a href='https://api2.correctprice.ru/get_opt_desc'>/get_opt_desc</a>)</h4>
+    <textarea disabled='true' id='desc'></textarea>
+    <script>
+      fetch('https://api2.correctprice.ru/get_opt_desc?jsoncallback=?')
+        .then((response) => response.text())
+        .then((response) => JSON.parse(response.replace(/\?\((.*)\)/, '$1')))
+        .then((response) => (window.correctprice.desc = response))
+        .then((response) => document.querySelector('#desc').value = JSON.stringify(response))
+        .catch(error => console.error(error));
+    </script>
+
+    <h4>Sect lib (<a href='https://api2.correctprice.ru/get_opt_sect'>/get_opt_sect</a>)</h4>
+    <textarea disabled='true' id='sect'></textarea>
+    <script>
+      fetch('https://api2.correctprice.ru/get_opt_sect?jsoncallback=?')
+        .then((response) => response.text())
+        .then((response) => JSON.parse(response.replace(/\?\((.*)\)/, '$1')))
+        .then((response) => (window.correctprice.sect = response))
+        .then((response) => document.querySelector('#sect').value = JSON.stringify(response))
+        .catch(error => console.error(error));
+    </script>
+  </section>
+
+  <!-- 2 -->
+  <section>
+    <h3>Step-2: Unpack complication example</h3>
+    <h4>GRPX vectors example (<a href='https://api2.correctprice.ru/get_compl?mid=282&year=2018'>/get_compl</a>) <small>2018 / Audi / A3</small></h4>
+    <textarea disabled='true' id='compl'></textarea>
+    <script>
+      fetch('https://api2.correctprice.ru/get_compl?mid=282&year=2018&jsoncallback=?')
+        .then((response) => response.text())
+        .then((response) => JSON.parse(response.replace(/\?\((.*)\)/, '$1')))
+        .then((response) => ({
+          grp0: response[0] && response[0].grp0,
+          grp1: response[0] && response[0].grp1,
+          grp2: response[0] && response[0].grp2,
+          grp3: response[0] && response[0].grp3,
+          grp4: response[0] && response[0].grp4,
+          grp5: response[0] && response[0].grp5,
+          grp6: response[0] && response[0].grp6,
+          grp7: response[0] && response[0].grp7,
+        }))
+        .then((response) => {
+          document.querySelector('#unpack-form [name=grp0]').value = response.grp0;
+          document.querySelector('#unpack-form [name=grp1]').value = response.grp1;
+          document.querySelector('#unpack-form [name=grp2]').value = response.grp2;
+          document.querySelector('#unpack-form [name=grp3]').value = response.grp3;
+          document.querySelector('#unpack-form [name=grp4]').value = response.grp4;
+          document.querySelector('#unpack-form [name=grp5]').value = response.grp5;
+          document.querySelector('#unpack-form [name=grp6]').value = response.grp6;
+          document.querySelector('#unpack-form [name=grp7]').value = response.grp7;
+          document.querySelector('#compl').value = JSON.stringify(response);
+        })
+        .catch(error => console.error(error));
+    </script>
+
+    <h4>Unpack complectation</h4>
+    <article>
+      <form id='unpack-form'>
+        <input type='text' name='grp0' placeholder='grp0' /><br />
+        <input type='text' name='grp1' placeholder='grp1' /><br />
+        <input type='text' name='grp2' placeholder='grp2' /><br />
+        <input type='text' name='grp3' placeholder='grp3' /><br />
+        <input type='text' name='grp4' placeholder='grp4' /><br />
+        <input type='text' name='grp5' placeholder='grp5' /><br />
+        <input type='text' name='grp6' placeholder='grp6' /><br />
+        <input type='text' name='grp7' placeholder='grp7' /><br />
+        <input type='submit' value='Unpack' />
+      </form>
+      <textarea disabled='true' id='unpack'></textarea>
+      <script>
+        document.querySelector('#unpack-form').addEventListener('submit', (e) => {
+          // 1) unpack form serialization -> { grp0:, grp1, ..., grp7 }
+          const formData = new FormData(e.target); const serializeData = {}; let i = 0;
+          for (const value of formData.values()) { serializeData['grp'+i] = value; i++; }
+
+          // 2) unpacking via GRPX lib -> { interior_comfort: {}, body_exterior: {} ... } 
+          const { desc, sect } = window.correctprice;
+          const grpx = new GRPX(desc, sect);
+          window.correctprice.unpacked = grpx.unpack(serializeData);
+
+          // 3) print result into the textarea -> { interior_comfort: {}, body_exterior: {} ... } 
+          document.querySelector('#unpack').dispatchEvent(new Event('ready'));
+          document.querySelector('#unpack').value =
+            JSON.stringify(window.correctprice.unpacked, undefined, 4);
+
+          e.preventDefault();
+        });
+      </script>
+    </article>
+  </section>
+
+  <!-- 3 -->
+  <section>
+    <h3>Step-3: Pack selected options example</h3>
+    <h4>All first selected options from Step-2</h4>
+    <article>
+      <textarea id='selected-options'></textarea>
+      <script>
+        document.querySelector('#unpack').addEventListener('ready', (e) => {
+          // 4) select the first value from each option
+          const { unpacked } = window.correctprice;
+          window.correctprice.selected = Object.keys(unpacked).reduce((result, lvl1) => {
+            for (const name in unpacked[lvl1])
+              result.push({name, value: unpacked[lvl1][name][0]});
+            return result;
+          }, []);
+
+          // 5) populate with the selected options
+          document.querySelector('#selected-options').value =
+            JSON.stringify(window.correctprice.selected, undefined, 4);
+        });
+      </script>
+
+      <form id='pack-form'>
+        <input type='text' name='grp0' placeholder='grp0' /><br />
+        <input type='text' name='grp1' placeholder='grp1' /><br />
+        <input type='text' name='grp2' placeholder='grp2' /><br />
+        <input type='text' name='grp3' placeholder='grp3' /><br />
+        <input type='text' name='grp4' placeholder='grp4' /><br />
+        <input type='text' name='grp5' placeholder='grp5' /><br />
+        <input type='text' name='grp6' placeholder='grp6' /><br />
+        <input type='text' name='grp7' placeholder='grp7' /><br />
+        <input type='submit' value='Pack' />
+      </form>
+      <script>
+        document.querySelector('#pack-form').addEventListener('submit', (e) => {
+          // Packing
+          const { desc, sect, selected } = window.correctprice;
+          const grpx = new GRPX(desc, sect);
+          window.correctprice.packed = grpx.pack(selected);
+          debugger;
+          // Populate
+          document.querySelector('#pack-form [name=grp0]').value = window.correctprice.packed.grp0;
+          document.querySelector('#pack-form [name=grp1]').value = window.correctprice.packed.grp1;
+          document.querySelector('#pack-form [name=grp2]').value = window.correctprice.packed.grp2;
+          document.querySelector('#pack-form [name=grp3]').value = window.correctprice.packed.grp3;
+          document.querySelector('#pack-form [name=grp4]').value = window.correctprice.packed.grp4;
+          document.querySelector('#pack-form [name=grp5]').value = window.correctprice.packed.grp5;
+          document.querySelector('#pack-form [name=grp6]').value = window.correctprice.packed.grp6;
+          document.querySelector('#pack-form [name=grp7]').value = window.correctprice.packed.grp7;
+
+          e.preventDefault();
+        });
+      </script>
+    </article>
+  </section>
+
+</body></html>
